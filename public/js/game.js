@@ -44,6 +44,7 @@
 
     if (faceDown) {
       el.classList.add('face-down');
+      el.innerHTML = '<span class="back-logo">SKIP<br>BO</span>';
       return el;
     }
     if (empty) {
@@ -55,13 +56,14 @@
     el.dataset.value = label;
     if (card === 'SB') {
       el.classList.add('skipbo');
-      el.innerHTML = '<span class="star">&#9733;</span><span class="center-pip">SB</span><span class="star">&#9733;</span>';
+      el.innerHTML = '<span class="skipbo-logo">SKIP<br>BO</span>';
     } else {
-      el.classList.add(`card-num-${card}`);
+      // Two alternating accent colors, like a real deck's mixed card stock.
+      el.classList.add(card % 2 === 0 ? 'theme-red' : 'theme-green');
       el.innerHTML = `
-        <span class="corner corner-tl">${label}</span>
+        <span class="corner-badge">${label}</span>
         <span class="center-pip">${label}</span>
-        <span class="corner corner-br">${label}</span>
+        <span class="swoosh"></span>
       `;
     }
     return el;

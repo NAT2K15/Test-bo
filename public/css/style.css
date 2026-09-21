@@ -1,132 +1,118 @@
-:root {
-  --c1: #dc2626;
-  --c2: #ea580c;
-  --c3: #b45309;
-  --c4: #a16207;
-  --c5: #4d7c0f;
-  --c6: #15803d;
-  --c7: #047857;
-  --c8: #0f766e;
-  --c9: #0e7490;
-  --c10: #1d4ed8;
-  --c11: #6d28d9;
-  --c12: #be185d;
-}
-
 .card {
   position: relative;
-  width: 3.75rem;
-  height: 5.25rem;
-  border-radius: 0.5rem;
+  width: 3.9rem;
+  height: 5.4rem;
+  border-radius: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 1.6rem;
-  font-family: Georgia, 'Times New Roman', serif;
-  background: linear-gradient(165deg, #ffffff, #f1f5f9);
-  color: #1e293b;
+  overflow: hidden;
+  background: #ffffff;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 2px 4px rgba(0, 0, 0, 0.15),
-    0 4px 10px rgba(0, 0, 0, 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 3px 6px rgba(0, 0, 0, 0.25),
+    0 5px 12px rgba(0, 0, 0, 0.3);
   user-select: none;
   cursor: pointer;
-  border: 1px solid #cbd5e1;
+  border: 3px solid #e2e8f0;
   transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.15s ease;
 }
 
-/* A thin inset frame, like the border printed on a real card face. */
-.card:not(.empty-slot):not(.face-down)::before {
-  content: '';
+/* The curved color band along the bottom, like a real Skip-Bo card. */
+.card .swoosh {
   position: absolute;
-  inset: 3px;
-  border: 1px solid currentColor;
-  opacity: 0.25;
-  border-radius: 0.3rem;
-  pointer-events: none;
+  left: -20%;
+  right: -20%;
+  bottom: -38%;
+  height: 62%;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.card .corner-badge {
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.15rem;
+  border-radius: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fff;
+  z-index: 1;
 }
 
 .card .center-pip {
+  position: relative;
+  z-index: 1;
+  font-size: 1.85rem;
+  font-weight: 800;
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
   line-height: 1;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
-.card .corner {
-  position: absolute;
-  font-size: 0.7rem;
-  font-weight: 700;
-  line-height: 1;
+.card.theme-red {
+  border-color: #dc2626;
 }
+.card.theme-red .swoosh { background: linear-gradient(180deg, #f87171, #dc2626); }
+.card.theme-red .corner-badge { background: #dc2626; }
+.card.theme-red .center-pip { color: #b91c1c; }
 
-.card .corner-tl {
-  top: 0.28rem;
-  left: 0.32rem;
+.card.theme-green {
+  border-color: #16a34a;
 }
+.card.theme-green .swoosh { background: linear-gradient(180deg, #4ade80, #16a34a); }
+.card.theme-green .corner-badge { background: #16a34a; }
+.card.theme-green .center-pip { color: #15803d; }
 
-.card .corner-br {
-  bottom: 0.28rem;
-  right: 0.32rem;
-  transform: rotate(180deg);
-}
-
-/* One clear ink color per number, printed on white card stock. */
-.card.card-num-1  { color: var(--c1); }
-.card.card-num-2  { color: var(--c2); }
-.card.card-num-3  { color: var(--c3); }
-.card.card-num-4  { color: var(--c4); }
-.card.card-num-5  { color: var(--c5); }
-.card.card-num-6  { color: var(--c6); }
-.card.card-num-7  { color: var(--c7); }
-.card.card-num-8  { color: var(--c8); }
-.card.card-num-9  { color: var(--c9); }
-.card.card-num-10 { color: var(--c10); }
-.card.card-num-11 { color: var(--c11); }
-.card.card-num-12 { color: var(--c12); }
-
+/* Skip-Bo wild: full-bleed orange card with the game's wordmark. */
 .card.skipbo {
-  background: linear-gradient(165deg, #fffbeb, #fef3c7);
-  color: #b45309;
-  border: 1px solid #f59e0b;
+  background: linear-gradient(160deg, #fb923c, #ea580c);
+  border-color: #fff;
 }
 
-.card.skipbo::before {
-  border-color: #f59e0b;
-  opacity: 0.4;
+.card.skipbo .skipbo-logo {
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.05;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.02em;
 }
 
-.card.skipbo .center-pip {
-  font-size: 1.1rem;
-  letter-spacing: 0.04em;
-  background: linear-gradient(90deg, #dc2626, #ea580c, #ca8a04, #16a34a, #1d4ed8, #7c3aed);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.card.skipbo .star {
-  font-size: 0.75rem;
-  color: #f59e0b;
-}
-
-/* Card back: a lattice pattern inside a colored border, like a real deck. */
+/* Card back: solid green with the wordmark, matching the draw-pile look. */
 .card.face-down {
-  background:
-    repeating-linear-gradient(45deg, #1d4ed8 0, #1d4ed8 3px, #1e40af 3px, #1e40af 6px),
-    repeating-linear-gradient(-45deg, #1d4ed8 0, #1d4ed8 3px, #1e40af 3px, #1e40af 6px);
-  background-blend-mode: multiply;
-  border: 3px solid #f8fafc;
-  outline: 1px solid #1e3a8a;
-  outline-offset: -4px;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 4px 10px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(160deg, #4ade80, #16a34a);
+  border: 3px solid #fff;
+}
+
+.card.face-down .back-logo {
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1.05;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .card.face-down.mini {
   width: 1.9rem;
   height: 2.7rem;
   border-width: 2px;
-  outline-offset: -3px;
+}
+
+.card.face-down.mini .back-logo {
+  font-size: 0.4rem;
 }
 
 .card.fanned {
@@ -155,32 +141,30 @@
 }
 
 .card:hover:not(.empty-slot):not(.face-down) {
-  transform: translateY(-4px) scale(1.04);
+  transform: translateY(-4px) scale(1.05);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 8px 16px rgba(0, 0, 0, 0.4);
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 10px 18px rgba(0, 0, 0, 0.35);
 }
 
 .card.selected {
-  border-color: #38bdf8;
-  transform: translateY(-8px) scale(1.06);
+  transform: translateY(-8px) scale(1.07);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 0 0 3px rgba(56, 189, 248, 0.65),
-    0 10px 18px rgba(0, 0, 0, 0.4);
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 0 0 3px rgba(56, 189, 248, 0.8),
+    0 12px 20px rgba(0, 0, 0, 0.4);
 }
 
 .card.legal-target {
-  border-color: #34d399;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 0 0 3px rgba(52, 211, 153, 0.65),
-    0 6px 14px rgba(0, 0, 0, 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 0 0 3px rgba(52, 211, 153, 0.8),
+    0 8px 16px rgba(0, 0, 0, 0.35);
 }
 
 .card .subnote {
   position: absolute;
-  margin-top: 3.4rem;
+  margin-top: 3.6rem;
   font-size: 0.65rem;
   font-weight: 400;
   color: #cbd5e1;
