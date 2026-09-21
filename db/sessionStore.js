@@ -1,9 +1,17 @@
 require('dotenv').config();
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
-const pool = require('./pool');
 
-const store = new MySQLStore({}, pool);
+const useJson = (process.env.STORAGE || 'mysql').toLowerCase() === 'json';
+
+let store;
+if (useJson) {
+  const JsonSessionStore = require('./jsonSessionStore');
+  store = new JsonSessionStore();
+} else {
+  const MySQLStore = require('express-mysql-session')(session);
+  const pool = require('./pool');
+  store = new MySQLStore({}, pool);
+}
 
 const sessionMiddleware = session({
   key: 'skipbo.sid',

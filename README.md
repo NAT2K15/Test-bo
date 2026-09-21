@@ -1,16 +1,21 @@
 # Skip-Bo Multiplayer
 
 A real-time multiplayer implementation of Skip-Bo. Node.js + Express serve
-server-rendered EJS pages; Socket.IO drives live gameplay; MySQL persists
+server-rendered EJS pages; Socket.IO drives live gameplay; storage persists
 players, rooms, and game state so an active game survives a server restart.
+
+Storage is pluggable: MySQL by default, or a zero-setup JSON-file dev mode
+(see [Storage Modes](#storage-modes)) — same code path either way.
 
 ## Tech Stack
 
 - **Backend:** Node.js, Express
 - **Views:** EJS (server-rendered) + vanilla JS on the client
 - **Real-time:** Socket.IO
-- **Database:** MySQL via `mysql2` (connection pool, parameterized queries only)
-- **Sessions:** `express-session` backed by a MySQL session store
+- **Database:** MySQL via `mysql2` (connection pool, parameterized queries
+  only) by default, or a local JSON file in dev mode — see below
+- **Sessions:** `express-session`, backed by a MySQL store or a matching
+  JSON-file store depending on `STORAGE`
 - **Styling:** Tailwind CSS via CDN
 
 ## Project Structure
@@ -20,10 +25,12 @@ server.js            Express + Socket.IO bootstrap, restores active games on sta
 routes/               Page routes (home, lobby, game, create/join)
 sockets/              Socket.IO handlers + in-memory game manager
 game/                 Pure rules engine (no Express/Socket.IO dependencies)
-db/                   MySQL pool, parameterized queries, session store, room codes
+db/                   Storage layer: queries.js dispatches to mysqlQueries.js
+                      or jsonQueries.js based on STORAGE; pool, session
+                      stores (MySQL + JSON), room codes
 views/                EJS templates (home, lobby, game, partials)
 public/               Client JS/CSS
-schema.sql            Full MySQL schema
+schema.sql            Full MySQL schema (only needed for STORAGE=mysql)
 __tests__/            Jest unit tests for the rules engine
 ```
 
@@ -35,7 +42,7 @@ __tests__/            Jest unit tests for the rules engine
 npm install
 ```
 
-### 2. Create the database
+### 2. Create the database (skip this for JSON dev mode)
 
 Make sure a MySQL (or MariaDB) server is running, then:
 
@@ -45,7 +52,8 @@ mysql -u root -p < schema.sql
 
 This creates the `skipbo` database and all required tables (`players`,
 `games`, `game_players`, `game_state`, `moves`, and the `sessions` table
-used by the session store).
+used by the session store). Not needed if you're only running with
+`STORAGE=json` — see [Storage Modes](#storage-modes).
 
 ### 3. Configure environment variables
 
@@ -56,7 +64,8 @@ cp .env.example .env
 Edit `.env` with your database credentials and a session secret:
 
 ```
-PORT=3000
+PORT=6767
+STORAGE=mysql
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
@@ -77,7 +86,7 @@ Or with auto-reload during development:
 npm run dev
 ```
 
-Visit `http://localhost:3000`.
+Visit `http://localhost:6767` (or whatever `PORT` you set).
 
 ### 5. Run the tests
 
@@ -103,6 +112,36 @@ rejection, and win detection.
    turn. Legal targets highlight automatically.
 5. First player to empty their stockpile wins. The host can then start a
    fresh game from the same lobby with **Play Again**.
+
+## Storage Modes
+
+Set `STORAGE` in `.env` to pick the backend. Both modes use the exact same
+routes, sockets, and rules engine — only `db/queries.js`'s dispatch target
+changes.
+
+- **`STORAGE=mysql`** (default) — persists everything to MySQL via
+  `db/mysqlQueries.js`, as described above. Requires `schema.sql` to be
+  loaded and the `DB_*` variables configured.
+
+- **`STORAGE=json`** — a zero-setup dev mode. No database server needed at
+  all: players, rooms, game state, and moves are kept in a single local
+  file (default `data/dev-db.json`, override with `JSON_DB_PATH`), and
+  sessions are stored the same way instead of in a MySQL session table.
+  Handy for quickly trying the app or working on gameplay/UI without
+  standing up MySQL. Run it with:
+
+  ```bash
+  npm run dev:json
+  ```
+
+  (or set `STORAGE=json` in `.env` and use `npm run dev`/`npm start` as
+  normal). `data/dev-db.json` is gitignored — delete it any time to reset
+  to a clean slate. This mode is meant for local development, not
+  production: writes are synchronous and the whole file is rewritten on
+  every change.
+
+  To go back to MySQL, set `STORAGE=mysql` (or just remove the line, since
+  that's the default) and restart the server.
 
 ## Server Authority
 

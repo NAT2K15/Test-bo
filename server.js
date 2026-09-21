@@ -5,7 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const { sessionMiddleware } = require('./db/sessionStore');
-const pool = require('./db/pool');
+const queries = require('./db/queries');
 const homeRoutes = require('./routes/home');
 const gameRoutes = require('./routes/game');
 const { registerSocketHandlers } = require('./sockets');
@@ -35,26 +35,27 @@ io.engine.use(sessionMiddleware);
 registerSocketHandlers(io);
 
 async function restoreActiveGames() {
-  const [rows] = await pool.query("SELECT id FROM games WHERE status = 'active'");
-  for (const row of rows) {
+  const activeGameIds = await queries.getActiveGameIds();
+  for (const gameId of activeGameIds) {
     try {
-      await gameManager.restoreGame(row.id);
+      await gameManager.restoreGame(gameId);
     } catch (err) {
-      console.error(`Failed to restore game ${row.id}:`, err.message);
+      console.error(`Failed to restore game ${gameId}:`, err.message);
     }
   }
-  if (rows.length > 0) {
-    console.log(`Restored ${rows.length} active game(s) from the database.`);
+  if (activeGameIds.length > 0) {
+    console.log(`Restored ${activeGameIds.length} active game(s) from storage.`);
   }
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 6767;
+const STORAGE = (process.env.STORAGE || 'mysql').toLowerCase();
 
 restoreActiveGames()
   .catch((err) => console.error('Startup restore failed:', err.message))
   .finally(() => {
     server.listen(PORT, () => {
-      console.log(`Skip-Bo server listening on http://localhost:${PORT}`);
+      console.log(`Skip-Bo server listening on http://localhost:${PORT} (storage: ${STORAGE})`);
     });
   });
 
