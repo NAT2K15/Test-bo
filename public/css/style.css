@@ -1,106 +1,153 @@
+:root {
+  --c1: #dc2626;
+  --c2: #ea580c;
+  --c3: #b45309;
+  --c4: #a16207;
+  --c5: #4d7c0f;
+  --c6: #15803d;
+  --c7: #047857;
+  --c8: #0f766e;
+  --c9: #0e7490;
+  --c10: #1d4ed8;
+  --c11: #6d28d9;
+  --c12: #be185d;
+}
+
 .card {
   position: relative;
   width: 3.75rem;
   height: 5.25rem;
-  border-radius: 0.6rem;
+  border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.5rem;
-  font-family: 'Georgia', 'Segoe UI', serif;
-  color: #fff;
+  font-size: 1.6rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: linear-gradient(165deg, #ffffff, #f1f5f9);
+  color: #1e293b;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 3px 8px rgba(0, 0, 0, 0.45);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 10px rgba(0, 0, 0, 0.35);
   user-select: none;
   cursor: pointer;
-  border: 2px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid #cbd5e1;
   transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.15s ease;
 }
 
+/* A thin inset frame, like the border printed on a real card face. */
+.card:not(.empty-slot):not(.face-down)::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid currentColor;
+  opacity: 0.25;
+  border-radius: 0.3rem;
+  pointer-events: none;
+}
+
 .card .center-pip {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   line-height: 1;
 }
 
 .card .corner {
   position: absolute;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  opacity: 0.85;
   line-height: 1;
 }
 
 .card .corner-tl {
-  top: 0.3rem;
-  left: 0.35rem;
+  top: 0.28rem;
+  left: 0.32rem;
 }
 
 .card .corner-br {
-  bottom: 0.3rem;
-  right: 0.35rem;
+  bottom: 0.28rem;
+  right: 0.32rem;
+  transform: rotate(180deg);
 }
 
-/* One vivid, distinct color per number so a hand reads at a glance. */
-.card.card-num-1  { background: linear-gradient(150deg, #f87171, #dc2626); }
-.card.card-num-2  { background: linear-gradient(150deg, #fb923c, #ea580c); }
-.card.card-num-3  { background: linear-gradient(150deg, #fbbf24, #d97706); color: #451a03; }
-.card.card-num-4  { background: linear-gradient(150deg, #facc15, #ca8a04); color: #422006; }
-.card.card-num-5  { background: linear-gradient(150deg, #a3e635, #65a30d); color: #1a2e05; }
-.card.card-num-6  { background: linear-gradient(150deg, #4ade80, #16a34a); }
-.card.card-num-7  { background: linear-gradient(150deg, #34d399, #059669); }
-.card.card-num-8  { background: linear-gradient(150deg, #2dd4bf, #0d9488); }
-.card.card-num-9  { background: linear-gradient(150deg, #22d3ee, #0891b2); }
-.card.card-num-10 { background: linear-gradient(150deg, #60a5fa, #2563eb); }
-.card.card-num-11 { background: linear-gradient(150deg, #a78bfa, #7c3aed); }
-.card.card-num-12 { background: linear-gradient(150deg, #f472b6, #db2777); }
-
-.card.card-num-3 .corner,
-.card.card-num-4 .corner,
-.card.card-num-5 .corner {
-  opacity: 0.7;
-}
-
-.card.card-num-3 .center-pip,
-.card.card-num-4 .center-pip,
-.card.card-num-5 .center-pip {
-  text-shadow: none;
-}
+/* One clear ink color per number, printed on white card stock. */
+.card.card-num-1  { color: var(--c1); }
+.card.card-num-2  { color: var(--c2); }
+.card.card-num-3  { color: var(--c3); }
+.card.card-num-4  { color: var(--c4); }
+.card.card-num-5  { color: var(--c5); }
+.card.card-num-6  { color: var(--c6); }
+.card.card-num-7  { color: var(--c7); }
+.card.card-num-8  { color: var(--c8); }
+.card.card-num-9  { color: var(--c9); }
+.card.card-num-10 { color: var(--c10); }
+.card.card-num-11 { color: var(--c11); }
+.card.card-num-12 { color: var(--c12); }
 
 .card.skipbo {
-  background: linear-gradient(145deg, #fde047, #f59e0b 45%, #ec4899 100%);
-  color: #1e1b4b;
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 0 0 2px rgba(253, 224, 71, 0.35),
-    0 3px 10px rgba(0, 0, 0, 0.5);
-  gap: 0.15rem;
+  background: linear-gradient(165deg, #fffbeb, #fef3c7);
+  color: #b45309;
+  border: 1px solid #f59e0b;
+}
+
+.card.skipbo::before {
+  border-color: #f59e0b;
+  opacity: 0.4;
 }
 
 .card.skipbo .center-pip {
-  font-size: 1.15rem;
-  letter-spacing: 0.03em;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #dc2626, #ea580c, #ca8a04, #16a34a, #1d4ed8, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .card.skipbo .star {
-  font-size: 0.7rem;
-  color: #7c2d12;
-  opacity: 0.8;
+  font-size: 0.75rem;
+  color: #f59e0b;
 }
 
+/* Card back: a lattice pattern inside a colored border, like a real deck. */
 .card.face-down {
   background:
-    repeating-linear-gradient(45deg, #1e293b, #1e293b 6px, #273449 6px, #273449 12px);
-  color: transparent;
-  border-color: #475569;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+    repeating-linear-gradient(45deg, #1d4ed8 0, #1d4ed8 3px, #1e40af 3px, #1e40af 6px),
+    repeating-linear-gradient(-45deg, #1d4ed8 0, #1d4ed8 3px, #1e40af 3px, #1e40af 6px);
+  background-blend-mode: multiply;
+  border: 3px solid #f8fafc;
+  outline: 1px solid #1e3a8a;
+  outline-offset: -4px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.card.face-down.mini {
+  width: 1.9rem;
+  height: 2.7rem;
+  border-width: 2px;
+  outline-offset: -3px;
+}
+
+.card.fanned {
+  position: relative;
+  margin-left: -1.35rem;
+  cursor: default;
+}
+
+.card.fanned:first-child {
+  margin-left: 0;
+}
+
+.hand-fan {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 1.35rem;
+  min-height: 2.9rem;
 }
 
 .card.empty-slot {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   border: 2px dashed #475569;
   box-shadow: none;
   color: #475569;
@@ -110,25 +157,25 @@
 .card:hover:not(.empty-slot):not(.face-down) {
   transform: translateY(-4px) scale(1.04);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 8px 16px rgba(0, 0, 0, 0.5);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .card.selected {
   border-color: #38bdf8;
   transform: translateY(-8px) scale(1.06);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 0 0 3px rgba(56, 189, 248, 0.55),
-    0 10px 18px rgba(0, 0, 0, 0.5);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 3px rgba(56, 189, 248, 0.65),
+    0 10px 18px rgba(0, 0, 0, 0.4);
 }
 
 .card.legal-target {
   border-color: #34d399;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 0 0 3px rgba(52, 211, 153, 0.55),
-    0 6px 14px rgba(0, 0, 0, 0.45);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 3px rgba(52, 211, 153, 0.65),
+    0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .card .subnote {

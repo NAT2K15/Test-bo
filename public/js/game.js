@@ -154,7 +154,8 @@
               <div class="flex gap-1 discard-slots"></div>
             </div>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Hand: ${p.handCount} card(s)</p>
+          <span class="pile-label block mt-3">Hand (${p.handCount})</span>
+          <div class="hand-fan"></div>
         `;
         const stockSlot = card.querySelector('.stockpile-slot');
         stockSlot.appendChild(
@@ -168,6 +169,16 @@
             pile.topCard != null ? makeCardEl(pile.topCard) : makeCardEl(null, { empty: true })
           );
         });
+        const fanEl = card.querySelector('.hand-fan');
+        const shown = Math.min(p.handCount, 7);
+        const mid = (shown - 1) / 2;
+        for (let i = 0; i < shown; i++) {
+          const back = makeCardEl(null, { faceDown: true });
+          back.classList.add('fanned', 'mini');
+          const offset = i - mid;
+          back.style.transform = `rotate(${offset * 5}deg) translateY(${Math.abs(offset) * 3}px)`;
+          fanEl.appendChild(back);
+        }
         opponentsEl.appendChild(card);
       });
   }
