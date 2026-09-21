@@ -1,0 +1,55 @@
+<%- include('partials/head', { title: 'Skip-Bo — ' + roomCode }) %>
+
+<main class="max-w-6xl mx-auto px-4 py-6" data-room-code="<%= roomCode %>" data-is-host="<%= isHost %>">
+  <div id="toast" class="hidden bg-red-800/70 border border-red-600 text-red-100 rounded-md px-4 py-2 mb-4 text-sm"></div>
+
+  <header class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-amber-400">Skip-Bo</h1>
+      <p class="text-slate-500 text-sm">Room <span class="font-mono"><%= roomCode %></span></p>
+    </div>
+    <div id="turn-indicator" class="text-lg font-semibold px-4 py-2 rounded-md bg-slate-800"></div>
+  </header>
+
+  <section id="opponents" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></section>
+
+  <section class="bg-slate-800/60 rounded-lg p-4 mb-6">
+    <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-3">Building Piles &middot; Draw Pile: <span id="draw-count">0</span></h2>
+    <div id="building-piles" class="flex flex-wrap gap-4 justify-center"></div>
+  </section>
+
+  <section class="bg-slate-800/60 rounded-lg p-4 mb-6">
+    <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-3">Your Area</h2>
+    <div class="flex flex-wrap gap-6 items-start">
+      <div>
+        <p class="text-xs text-slate-500 mb-1">Stockpile</p>
+        <div id="my-stockpile"></div>
+      </div>
+      <div>
+        <p class="text-xs text-slate-500 mb-1">Discard Piles</p>
+        <div id="my-discard-piles" class="flex gap-3"></div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 mt-4 mb-1">Your Hand</p>
+    <div id="my-hand" class="flex flex-wrap gap-3"></div>
+  </section>
+
+  <section class="bg-slate-900/60 rounded-lg p-4">
+    <h2 class="text-sm uppercase tracking-wide text-slate-400 mb-2">Recent Moves</h2>
+    <ul id="move-log" class="text-sm text-slate-400 space-y-1 max-h-32 overflow-y-auto"></ul>
+  </section>
+</main>
+
+<div id="game-over" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+  <div class="bg-slate-800 rounded-lg p-8 text-center max-w-sm mx-4 shadow-2xl">
+    <h2 class="text-3xl font-bold text-amber-400 mb-2">Game Over</h2>
+    <p id="winner-text" class="text-slate-200 mb-6"></p>
+    <button id="play-again-btn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold rounded-md py-3">
+      Play Again
+    </button>
+    <p id="play-again-wait" class="hidden text-slate-500 text-sm mt-3">Waiting for the host to restart&hellip;</p>
+  </div>
+</div>
+
+<%- include('partials/foot') %>
+<script src="/js/game.js"></script>

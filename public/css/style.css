@@ -1,0 +1,70 @@
+.card {
+  width: 3.5rem;
+  height: 5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  color: #0f172a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.card.skipbo {
+  background: linear-gradient(160deg, #fbbf24, #f59e0b);
+  color: #1e293b;
+}
+
+.card.face-down {
+  background: linear-gradient(160deg, #334155, #1e293b);
+  color: transparent;
+}
+
+.card.empty-slot {
+  background: transparent;
+  border: 2px dashed #475569;
+  box-shadow: none;
+  color: #475569;
+  cursor: default;
+}
+
+.card:hover:not(.empty-slot):not(.face-down) {
+  transform: translateY(-3px);
+}
+
+.card.selected {
+  border-color: #38bdf8;
+  transform: translateY(-6px);
+}
+
+.card.legal-target {
+  border-color: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.4);
+}
+
+.card .subnote {
+  position: absolute;
+  margin-top: 3.2rem;
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #cbd5e1;
+}
+
+.pile-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pile-label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
