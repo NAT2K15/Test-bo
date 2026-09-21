@@ -5,8 +5,8 @@ const constants = require('./constants');
 
 /** Creates a brand-new game state for the given ordered player names and
  * kicks off seat 0's first turn (draws their opening hand of 5). */
-function createGame(playerNames) {
-  const state = dealStockpilesAndDrawPile(playerNames);
+function createGame(playerNames, options = {}) {
+  const state = dealStockpilesAndDrawPile(playerNames, options);
   rules.startTurn(state, 0);
   return state;
 }
@@ -35,6 +35,9 @@ function getPublicState(state, forSeat) {
         stockpileCount: p.stockpile.length,
         stockpileTop: rules.peekTop(p.stockpile) ?? null,
         discardPiles: p.discardPiles.map((pile) => ({
+          // Discard piles sit face-up on the table in real Skip-Bo, so the
+          // full pile (not just the top) is legitimately public info.
+          cards: pile.slice(),
           topCard: rules.peekTop(pile) ?? null,
           count: pile.length,
         })),

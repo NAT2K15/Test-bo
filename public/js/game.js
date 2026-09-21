@@ -8,19 +8,25 @@
   const turnIndicatorEl = document.getElementById('turn-indicator');
   const opponentsEl = document.getElementById('opponents');
   const buildingPilesEl = document.getElementById('building-piles');
-  const drawCountEl = document.getElementById('draw-count');
+  const drawPileVisualEl = document.getElementById('draw-pile-visual');
+  const myAreaPanelEl = document.getElementById('my-area-panel');
   const myStockpileEl = document.getElementById('my-stockpile');
   const myDiscardPilesEl = document.getElementById('my-discard-piles');
   const myHandEl = document.getElementById('my-hand');
-  const moveLogEl = document.getElementById('move-log');
   const gameOverEl = document.getElementById('game-over');
   const winnerTextEl = document.getElementById('winner-text');
   const playAgainBtn = document.getElementById('play-again-btn');
   const playAgainWaitEl = document.getElementById('play-again-wait');
+  const myReactionBtn = document.getElementById('my-reaction-btn');
+  const myReactionPicker = document.getElementById('my-reaction-picker');
+
+  const REACTIONS = ['😀', '😘', '😢', '😲', '😜', '😳'];
+  const DRAG_THRESHOLD = 6;
 
   let latestState = null;
   let mySeat = null;
   let selected = null; // { source: 'hand'|'stockpile'|'discard', sourceIndex, card }
+  let prevHandCount = 0;
 
   function showToast(message) {
     toastEl.textContent = message;
@@ -69,12 +75,39 @@
     return el;
   }
 
+  /** A discard pile shown as a small stack: the card just under the top
+   * peeking out behind it, even though only the top card is playable. */
+  function renderDiscardStack(pile) {
+    const stack = document.createElement('div');
+    stack.className = 'discard-stack';
+    const cards = pile.cards || [];
+    if (cards.length === 0) {
+      stack.appendChild(makeCardEl(null, { empty: true }));
+      return stack;
+    }
+    if (cards.length >= 2) {
+      const peekCard = makeCardEl(cards[cards.length - 2]);
+      peekCard.classList.add('peek');
+      stack.appendChild(peekCard);
+    }
+    const topCard = makeCardEl(cards[cards.length - 1]);
+    topCard.classList.add('top');
+    stack.appendChild(topCard);
+    return stack;
+  }
+
   function isMyTurn() {
     return latestState && mySeat === latestState.currentTurnSeat;
   }
 
   function isLegalBuildingTarget(card, pile) {
     return card === 'SB' || card === pile.nextNeeded;
+  }
+
+  function buildPlayMove(source, sourceIndex, targetPileIndex) {
+    const move = { type: 'PLAY', source, targetPileIndex };
+    if (source === 'hand' || source === 'discard') move.sourceIndex = sourceIndex;
+    return move;
   }
 
   function clearSelection() {
@@ -84,11 +117,7 @@
 
   function selectCard(source, sourceIndex, card) {
     if (!isMyTurn()) return;
-    if (
-      selected &&
-      selected.source === source &&
-      selected.sourceIndex === sourceIndex
-    ) {
+    if (selected && selected.source === source && selected.sourceIndex === sourceIndex) {
       clearSelection();
       return;
     }
@@ -103,21 +132,149 @@
 
   function playOnBuildingPile(targetPileIndex) {
     if (!selected) return;
-    const move = {
-      type: 'PLAY',
-      source: selected.source,
-      targetPileIndex,
-    };
-    if (selected.source === 'hand' || selected.source === 'discard') {
-      move.sourceIndex = selected.sourceIndex;
-    }
-    sendMove(move);
+    sendMove(buildPlayMove(selected.source, selected.sourceIndex, targetPileIndex));
   }
 
   function discardToPile(targetPileIndex) {
     if (!selected || selected.source !== 'hand') return;
     sendMove({ type: 'DISCARD', sourceIndex: selected.sourceIndex, targetPileIndex });
   }
+
+  // -- Drag and drop --------------------------------------------------------
+
+  /** Adds 'legal-target' to every currently-rendered pile card that this
+   * source card could legally land on, without rebuilding any DOM (so a
+   * card mid-drag never gets orphaned by a re-render). Returns the list of
+   * {el, kind, idx} targets found, for hover-tracking and drop resolution. */
+  function highlightLegalTargets(card, source) {
+    const targets = [];
+    buildingPilesEl.querySelectorAll('.pile-wrap').forEach((wrap, idx) => {
+      const cardEl = wrap.querySelector('.card');
+      const pile = latestState.buildingPiles[idx];
+      if (cardEl && isLegalBuildingTarget(card, pile)) {
+        cardEl.classList.add('legal-target');
+        targets.push({ el: cardEl, kind: 'building', idx });
+      }
+    });
+    if (source === 'hand') {
+      myDiscardPilesEl.querySelectorAll('.discard-stack').forEach((stack, idx) => {
+        const cardEl = stack.querySelector('.top, .empty-slot');
+        if (cardEl) {
+          cardEl.classList.add('legal-target');
+          targets.push({ el: cardEl, kind: 'discard', idx });
+        }
+      });
+    }
+    return targets;
+  }
+
+  function clearAllHighlights() {
+    document.querySelectorAll('.card.legal-target, .card.drop-hover').forEach((el) => {
+      el.classList.remove('legal-target', 'drop-hover');
+    });
+  }
+
+  function attachDragAndSelect(el, source, sourceIndex, card) {
+    el.addEventListener('pointerdown', (ev) => {
+      if (!isMyTurn() || ev.button === 2) return;
+      clearAllHighlights();
+
+      const startX = ev.clientX;
+      const startY = ev.clientY;
+      let dragging = false;
+      let ghost = null;
+      let targets = [];
+
+      function positionGhost(e) {
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        ghost.style.left = `${e.clientX - w / 2}px`;
+        ghost.style.top = `${e.clientY - h / 2}px`;
+        ghost.style.width = `${w}px`;
+        ghost.style.height = `${h}px`;
+      }
+
+      function updateHover(e) {
+        targets.forEach((t) => t.el.classList.remove('drop-hover'));
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        const match = targets.find((t) => t.el === under || t.el.contains(under));
+        if (match) match.el.classList.add('drop-hover');
+      }
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!dragging && Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+          dragging = true;
+          el.classList.add('dragging');
+          ghost = el.cloneNode(true);
+          ghost.classList.add('drag-ghost');
+          ghost.classList.remove('dragging');
+          document.body.appendChild(ghost);
+          targets = highlightLegalTargets(card, source);
+        }
+        if (dragging) {
+          positionGhost(e);
+          updateHover(e);
+        }
+      }
+
+      function onUp(e) {
+        document.removeEventListener('pointermove', onMove);
+        el.classList.remove('dragging');
+
+        if (dragging) {
+          const under = document.elementFromPoint(e.clientX, e.clientY);
+          const match = targets.find((t) => t.el === under || t.el.contains(under));
+          targets.forEach((t) => t.el.classList.remove('legal-target', 'drop-hover'));
+          if (ghost) ghost.remove();
+          if (match) {
+            if (match.kind === 'building') {
+              sendMove(buildPlayMove(source, sourceIndex, match.idx));
+            } else if (match.kind === 'discard') {
+              sendMove({ type: 'DISCARD', sourceIndex, targetPileIndex: match.idx });
+            }
+          }
+        } else {
+          selectCard(source, sourceIndex, card);
+        }
+      }
+
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp, { once: true });
+    });
+  }
+
+  // -- Emoji reactions --------------------------------------------------------
+
+  function buildReactionPicker() {
+    myReactionPicker.innerHTML = '';
+    REACTIONS.forEach((emoji) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = emoji;
+      btn.addEventListener('click', () => {
+        socket.emit('game:reaction', emoji);
+        myReactionPicker.classList.add('hidden');
+      });
+      myReactionPicker.appendChild(btn);
+    });
+  }
+
+  function showFloatingReaction(seat, emoji) {
+    const anchor =
+      seat === mySeat ? myAreaPanelEl : opponentsEl.querySelector(`[data-seat="${seat}"]`);
+    if (!anchor) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'floating-reaction';
+    bubble.textContent = emoji;
+    anchor.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 2300);
+  }
+
+  myReactionBtn.addEventListener('click', () => myReactionPicker.classList.toggle('hidden'));
+
+  // -- Rendering --------------------------------------------------------
 
   function renderTurnIndicator() {
     const current = latestState.players.find((p) => p.seat === latestState.currentTurnSeat);
@@ -139,7 +296,8 @@
       .filter((p) => p.seat !== mySeat)
       .forEach((p) => {
         const card = document.createElement('div');
-        card.className = 'bg-slate-800 rounded-lg p-4';
+        card.className = 'relative bg-slate-800 rounded-lg p-4';
+        card.dataset.seat = p.seat;
         const isTurn = p.seat === latestState.currentTurnSeat;
         card.innerHTML = `
           <div class="flex items-center justify-between mb-3">
@@ -153,7 +311,7 @@
             </div>
             <div class="pile-wrap">
               <span class="pile-label">Discards</span>
-              <div class="flex gap-1 discard-slots"></div>
+              <div class="flex gap-2 discard-slots"></div>
             </div>
           </div>
           <span class="pile-label block mt-3">Hand (${p.handCount})</span>
@@ -167,9 +325,7 @@
         );
         const discardSlots = card.querySelector('.discard-slots');
         p.discardPiles.forEach((pile) => {
-          discardSlots.appendChild(
-            pile.topCard != null ? makeCardEl(pile.topCard) : makeCardEl(null, { empty: true })
-          );
+          discardSlots.appendChild(renderDiscardStack(pile));
         });
         const fanEl = card.querySelector('.hand-fan');
         const shown = Math.min(p.handCount, 7);
@@ -185,15 +341,31 @@
       });
   }
 
+  function renderDrawPile() {
+    drawPileVisualEl.innerHTML = '';
+    const count = latestState.drawPileCount;
+    const shown = Math.min(3, count);
+    for (let i = 0; i < shown; i++) {
+      drawPileVisualEl.appendChild(makeCardEl(null, { faceDown: true }));
+    }
+    if (count === 0) {
+      drawPileVisualEl.appendChild(makeCardEl(null, { empty: true }));
+    }
+    const badge = document.createElement('div');
+    badge.className = 'draw-pile-count';
+    badge.textContent = count;
+    drawPileVisualEl.appendChild(badge);
+  }
+
   function renderBuildingPiles() {
-    drawCountEl.textContent = latestState.drawPileCount;
     buildingPilesEl.innerHTML = '';
     latestState.buildingPiles.forEach((pile, idx) => {
       const wrap = document.createElement('div');
       wrap.className = 'pile-wrap';
+      wrap.style.position = 'relative';
       const label = document.createElement('span');
       label.className = 'pile-label';
-      label.textContent = `Pile ${idx + 1} (needs ${pile.nextNeeded})`;
+      label.textContent = `Pile ${idx + 1}`;
       wrap.appendChild(label);
 
       const cardEl =
@@ -203,7 +375,6 @@
         const sub = document.createElement('div');
         sub.className = 'subnote';
         sub.textContent = `as ${pile.cards.length}`;
-        wrap.style.position = 'relative';
         wrap.appendChild(sub);
       }
 
@@ -228,16 +399,10 @@
     const stockCard =
       me.stockpileTop != null ? makeCardEl(me.stockpileTop) : makeCardEl(null, { empty: true });
     if (me.stockpileTop != null) {
-      if (
-        selected &&
-        selected.source === 'stockpile' &&
-        selected.card === me.stockpileTop
-      ) {
+      if (selected && selected.source === 'stockpile' && selected.card === me.stockpileTop) {
         stockCard.classList.add('selected');
       }
-      stockCard.addEventListener('click', () =>
-        selectCard('stockpile', null, me.stockpileTop)
-      );
+      attachDragAndSelect(stockCard, 'stockpile', null, me.stockpileTop);
     }
     stockWrap.appendChild(stockCard);
     myStockpileEl.appendChild(stockWrap);
@@ -247,56 +412,40 @@
       const wrap = document.createElement('div');
       wrap.className = 'pile-wrap';
       wrap.innerHTML = `<span class="pile-label">Pile ${idx + 1}</span>`;
-      const cardEl =
-        pile.topCard != null ? makeCardEl(pile.topCard) : makeCardEl(null, { empty: true });
+      const stack = renderDiscardStack(pile);
+      const interactiveEl = stack.querySelector('.top, .empty-slot');
 
       const canDiscardHere = selected && selected.source === 'hand';
-      if (canDiscardHere) {
-        cardEl.classList.add('legal-target');
-        cardEl.addEventListener('click', () => discardToPile(idx));
+      if (interactiveEl && canDiscardHere) {
+        interactiveEl.classList.add('legal-target');
+        interactiveEl.addEventListener('click', () => discardToPile(idx));
       } else if (pile.topCard != null) {
-        if (
-          selected &&
-          selected.source === 'discard' &&
-          selected.sourceIndex === idx
-        ) {
-          cardEl.classList.add('selected');
+        const topEl = stack.querySelector('.top');
+        if (selected && selected.source === 'discard' && selected.sourceIndex === idx) {
+          topEl.classList.add('selected');
         }
-        cardEl.addEventListener('click', () => selectCard('discard', idx, pile.topCard));
+        attachDragAndSelect(topEl, 'discard', idx, pile.topCard);
       }
-      wrap.appendChild(cardEl);
+      wrap.appendChild(stack);
       myDiscardPilesEl.appendChild(wrap);
     });
 
     myHandEl.innerHTML = '';
-    (me.hand || []).forEach((card, idx) => {
+    const hand = me.hand || [];
+    const grownFrom = hand.length > prevHandCount ? prevHandCount : null;
+    hand.forEach((card, idx) => {
       const cardEl = makeCardEl(card);
+      if (grownFrom !== null && idx >= grownFrom) {
+        cardEl.classList.add('deal-in');
+        cardEl.style.animationDelay = `${(idx - grownFrom) * 60}ms`;
+      }
       if (selected && selected.source === 'hand' && selected.sourceIndex === idx) {
         cardEl.classList.add('selected');
       }
-      cardEl.addEventListener('click', () => selectCard('hand', idx, card));
+      attachDragAndSelect(cardEl, 'hand', idx, card);
       myHandEl.appendChild(cardEl);
     });
-  }
-
-  function renderLog() {
-    moveLogEl.innerHTML = '';
-    const entries = latestState.log.slice().reverse();
-    entries.forEach((entry) => {
-      const player = latestState.players.find((p) => p.seat === entry.seat);
-      const name = player ? player.name : `Seat ${entry.seat}`;
-      let text = '';
-      if (entry.type === 'PLAY') {
-        text = `${name} played ${cardLabel(entry.card)} from ${entry.source} onto pile ${entry.targetPileIndex + 1}`;
-      } else if (entry.type === 'DISCARD') {
-        text = `${name} discarded ${cardLabel(entry.card)} onto their pile ${entry.targetPileIndex + 1}`;
-      } else if (entry.type === 'AUTO_DISCARD') {
-        text = `${name} ran out of time and auto-discarded`;
-      }
-      const li = document.createElement('li');
-      li.textContent = text;
-      moveLogEl.appendChild(li);
-    });
+    prevHandCount = hand.length;
   }
 
   function renderGameOver() {
@@ -324,9 +473,9 @@
     if (!latestState) return;
     renderTurnIndicator();
     renderOpponents();
+    renderDrawPile();
     renderBuildingPiles();
     renderMyArea();
-    renderLog();
     renderGameOver();
   }
 
@@ -341,6 +490,8 @@
 
   socket.on('error:toast', showToast);
 
+  socket.on('game:reaction', ({ seat, emoji }) => showFloatingReaction(seat, emoji));
+
   socket.on('game:returnToLobby', ({ roomCode }) => {
     window.location.href = `/lobby/${roomCode}`;
   });
@@ -348,4 +499,6 @@
   playAgainBtn.addEventListener('click', () => {
     socket.emit('game:playAgain');
   });
+
+  buildReactionPicker();
 })();

@@ -17,6 +17,15 @@
   <% if (isHost) { %>
     <div class="bg-slate-800 rounded-lg p-6 shadow-lg mb-6 space-y-4">
       <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1">Stockpile size</label>
+        <select id="stockpile-size" class="w-full rounded-md bg-slate-700 border border-slate-600 px-3 py-2">
+          <option value="3">3 cards (quick game)</option>
+          <option value="5" selected>5 cards</option>
+          <option value="7">7 cards</option>
+          <option value="10">10 cards</option>
+        </select>
+      </div>
+      <div>
         <label class="block text-sm font-medium text-slate-300 mb-1">Turn timer (optional)</label>
         <select id="turn-timer" class="w-full rounded-md bg-slate-700 border border-slate-600 px-3 py-2">
           <option value="">No timer</option>

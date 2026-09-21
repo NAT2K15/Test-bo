@@ -8,6 +8,7 @@
   const playerCountEl = document.getElementById('player-count');
   const startBtn = document.getElementById('start-btn');
   const turnTimerEl = document.getElementById('turn-timer');
+  const stockpileSizeEl = document.getElementById('stockpile-size');
   const toastEl = document.getElementById('toast');
 
   function showToast(message) {
@@ -48,6 +49,7 @@
       socket.emit('lobby:start', {
         roomCode,
         turnTimerSeconds: turnTimerEl.value ? Number(turnTimerEl.value) : null,
+        stockpileSize: stockpileSizeEl ? Number(stockpileSizeEl.value) : undefined,
       });
     });
   }

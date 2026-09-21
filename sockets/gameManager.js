@@ -30,7 +30,9 @@ async function persist(gameId, state) {
  */
 async function startGame(gameId, seatedPlayers, options = {}) {
   const names = seatedPlayers.map((p) => p.name);
-  const state = engine.createGame(names);
+  const state = engine.createGame(names, {
+    stockpileSize: options.stockpileSize || undefined,
+  });
 
   const seatToPlayerId = new Map();
   seatedPlayers.forEach((p, seat) => seatToPlayerId.set(seat, p.playerId));

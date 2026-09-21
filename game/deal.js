@@ -22,8 +22,10 @@ function stockpileSizeFor(playerCount) {
  * Skip-Bo setup where no separate starting hand is dealt.
  *
  * @param {string[]} playerNames - ordered by seat
+ * @param {{stockpileSize?: number}} [options] - override the official
+ *   30/20-card stockpile size (e.g. for shorter custom games)
  */
-function dealStockpilesAndDrawPile(playerNames) {
+function dealStockpilesAndDrawPile(playerNames, options = {}) {
   const playerCount = playerNames.length;
   if (playerCount < MIN_PLAYERS || playerCount > MAX_PLAYERS) {
     throw new Error(
@@ -31,7 +33,7 @@ function dealStockpilesAndDrawPile(playerNames) {
     );
   }
 
-  const stockpileSize = stockpileSizeFor(playerCount);
+  const stockpileSize = options.stockpileSize || stockpileSizeFor(playerCount);
   const deck = shuffle(createDeck());
 
   let idx = 0;

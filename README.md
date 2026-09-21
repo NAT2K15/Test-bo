@@ -104,12 +104,15 @@ rejection, and win detection.
 1. Enter a display name on the home page.
 2. **Create Game** to get a 5-character room code, or **Join Game** with a
    code a friend shared.
-3. In the lobby, the host can set an optional turn timer and starts the
-   game once at least 2 players (up to 6) have joined.
-4. On the game page, click a card to select it (from your hand, your
-   stockpile top, or one of your discard pile tops), then click a
-   highlighted building pile to play it, or a discard pile to end your
-   turn. Legal targets highlight automatically.
+3. In the lobby, the host picks a stockpile size (3/5/7/10 cards — smaller
+   than the official 30/20 for quicker games), an optional turn timer, and
+   starts the game once at least 2 players (up to 6) have joined.
+4. On the game page, drag a card (from your hand, your stockpile top, or
+   one of your discard pile tops) onto a building pile or discard pile —
+   or just tap the card, then tap the highlighted target. Legal targets
+   highlight automatically. Discard piles show a peek of the card beneath
+   the top one, though only the top card is ever playable. React with an
+   emoji any time via the smiley button in your area.
 5. First player to empty their stockpile wins. The host can then start a
    fresh game from the same lobby with **Play Again**.
 

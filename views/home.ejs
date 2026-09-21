@@ -1,7 +1,10 @@
 <%- include('partials/head', { title: 'Skip-Bo' }) %>
 
-<main class="max-w-md mx-auto mt-16 px-4">
-  <h1 class="text-4xl font-bold text-center mb-8 text-amber-400">Skip-Bo</h1>
+<main class="max-w-md mx-auto mt-12 px-4">
+  <div class="text-center mb-10">
+    <div class="brand-logo mx-auto">SKIP<br>BO</div>
+    <p class="text-slate-500 text-sm mt-3 tracking-wide">Play the classic card game with friends</p>
+  </div>
 
   <% if (error) { %>
     <div class="bg-red-800/60 border border-red-600 text-red-100 rounded-md px-4 py-2 mb-6 text-sm">
@@ -10,33 +13,37 @@
   <% } %>
 
   <% if (!displayName) { %>
-    <form action="/name" method="POST" class="bg-slate-800 rounded-lg p-6 shadow-lg space-y-4">
-      <label class="block text-sm font-medium text-slate-300">Your name</label>
+    <form action="/name" method="POST" class="bg-slate-800 rounded-2xl p-6 shadow-lg space-y-4 border border-slate-700">
+      <label class="block text-sm font-medium text-slate-300">What should we call you?</label>
       <input name="displayName" maxlength="30" required autofocus
-        class="w-full rounded-md bg-slate-700 border border-slate-600 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
-        placeholder="e.g. Alex" />
+        class="w-full rounded-full bg-slate-700 border border-slate-600 px-5 py-3 text-center text-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+        placeholder="Your name" />
       <button type="submit"
-        class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-md py-2 transition">
-        Continue
+        class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-full py-3 transition shadow-md">
+        Let's Play
       </button>
     </form>
   <% } else { %>
-    <p class="text-center text-slate-400 mb-6">
-      Playing as <span class="font-semibold text-slate-100"><%= displayName %></span>
-      &middot; <a href="#" onclick="document.getElementById('rename').classList.toggle('hidden'); return false;" class="underline text-amber-400">change</a>
-    </p>
+    <div class="flex items-center justify-center gap-3 mb-6">
+      <div class="name-plate">
+        <span class="name-plate-avatar"><%= displayName.charAt(0).toUpperCase() %></span>
+        <span class="font-semibold"><%= displayName %></span>
+      </div>
+      <a href="#" onclick="document.getElementById('rename').classList.toggle('hidden'); return false;"
+        class="text-xs text-slate-500 underline">change</a>
+    </div>
 
-    <form id="rename" action="/name" method="POST" class="hidden bg-slate-800 rounded-lg p-4 mb-6 space-y-3">
+    <form id="rename" action="/name" method="POST" class="hidden bg-slate-800 rounded-2xl p-4 mb-6 space-y-3 border border-slate-700">
       <input name="displayName" maxlength="30" required value="<%= displayName %>"
-        class="w-full rounded-md bg-slate-700 border border-slate-600 px-3 py-2 text-slate-100" />
-      <button type="submit" class="w-full bg-slate-600 hover:bg-slate-500 rounded-md py-2">Save</button>
+        class="w-full rounded-full bg-slate-700 border border-slate-600 px-4 py-2 text-center text-slate-100" />
+      <button type="submit" class="w-full bg-slate-600 hover:bg-slate-500 rounded-full py-2">Save</button>
     </form>
 
     <div class="grid grid-cols-1 gap-6">
-      <form action="/game/create" method="POST" class="bg-slate-800 rounded-lg p-6 shadow-lg space-y-4">
-        <h2 class="text-xl font-semibold text-amber-300">Create Game</h2>
+      <form action="/game/create" method="POST" class="bg-slate-800 rounded-2xl p-6 shadow-lg space-y-4 border border-slate-700">
+        <h2 class="text-xl font-bold text-emerald-400">Create a Room</h2>
         <label class="block text-sm font-medium text-slate-300">Max players</label>
-        <select name="maxPlayers" class="w-full rounded-md bg-slate-700 border border-slate-600 px-3 py-2">
+        <select name="maxPlayers" class="w-full rounded-full bg-slate-700 border border-slate-600 px-4 py-2 text-center">
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4" selected>4</option>
@@ -44,19 +51,19 @@
           <option value="6">6</option>
         </select>
         <button type="submit"
-          class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold rounded-md py-2 transition">
+          class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold rounded-full py-3 transition shadow-md">
           Create Room
         </button>
       </form>
 
-      <form action="/game/join" method="POST" class="bg-slate-800 rounded-lg p-6 shadow-lg space-y-4">
-        <h2 class="text-xl font-semibold text-amber-300">Join Game</h2>
+      <form action="/game/join" method="POST" class="bg-slate-800 rounded-2xl p-6 shadow-lg space-y-4 border border-slate-700">
+        <h2 class="text-xl font-bold text-sky-400">Join a Room</h2>
         <label class="block text-sm font-medium text-slate-300">Room code</label>
         <input name="roomCode" maxlength="5" required
-          class="w-full uppercase tracking-widest text-center text-lg rounded-md bg-slate-700 border border-slate-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          class="w-full uppercase tracking-[0.3em] text-center text-lg font-bold rounded-full bg-slate-700 border border-slate-600 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500"
           placeholder="ABCDE" />
         <button type="submit"
-          class="w-full bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold rounded-md py-2 transition">
+          class="w-full bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold rounded-full py-3 transition shadow-md">
           Join Room
         </button>
       </form>

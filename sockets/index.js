@@ -5,6 +5,8 @@ const gameManager = require('./gameManager');
 
 const TURN_TIMER_MIN = 10;
 const TURN_TIMER_MAX = 120;
+const ALLOWED_STOCKPILE_SIZES = [3, 5, 7, 10];
+const ALLOWED_REACTIONS = ['😀', '😘', '😢', '😲', '😜', '😳'];
 
 function lobbyRoom(gameId) {
   return `lobby:${gameId}`;
@@ -102,7 +104,7 @@ function registerSocketHandlers(io) {
       }
     });
 
-    socket.on('lobby:start', async ({ roomCode, turnTimerSeconds } = {}) => {
+    socket.on('lobby:start', async ({ roomCode, turnTimerSeconds, stockpileSize } = {}) => {
       try {
         if (!session?.playerId) return;
         const game = await queries.getGameByRoomCode(String(roomCode).toUpperCase());
@@ -128,7 +130,13 @@ function registerSocketHandlers(io) {
             ? timer
             : null;
 
-        await gameManager.startGame(game.id, seatedPlayers, { turnTimerSeconds: validTimer });
+        const size = Number(stockpileSize);
+        const validStockpileSize = ALLOWED_STOCKPILE_SIZES.includes(size) ? size : null;
+
+        await gameManager.startGame(game.id, seatedPlayers, {
+          turnTimerSeconds: validTimer,
+          stockpileSize: validStockpileSize,
+        });
         io.to(lobbyRoom(game.id)).emit('lobby:started', { roomCode: game.room_code });
         scheduleTurnTimer(io, game.id, game.room_code);
       } catch (err) {
@@ -190,6 +198,13 @@ function registerSocketHandlers(io) {
       } catch (err) {
         socket.emit('error:toast', 'Could not apply move');
       }
+    });
+
+    socket.on('game:reaction', (emoji) => {
+      const { gameId, seat } = socket.data;
+      if (!gameId || seat == null) return;
+      if (!ALLOWED_REACTIONS.includes(emoji)) return;
+      io.to(gameRoom(gameId)).emit('game:reaction', { seat, emoji });
     });
 
     socket.on('game:playAgain', async () => {

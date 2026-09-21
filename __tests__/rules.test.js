@@ -72,6 +72,18 @@ describe('deal sizes by player count', () => {
     ).toThrow();
   });
 
+  test('an explicit stockpileSize option overrides the official default', () => {
+    const state = dealStockpilesAndDrawPile(['A', 'B'], { stockpileSize: 3 });
+    state.players.forEach((p) => expect(p.stockpile.length).toBe(3));
+  });
+
+  test('stockpileSize option leaves the draw pile with the remainder', () => {
+    const state = dealStockpilesAndDrawPile(['A', 'B', 'C'], { stockpileSize: 5 });
+    const stockTotal = state.players.reduce((s, p) => s + p.stockpile.length, 0);
+    expect(stockTotal).toBe(15);
+    expect(stockTotal + state.drawPile.length).toBe(162);
+  });
+
   test('total cards dealt across stockpiles + draw pile == 162', () => {
     const state = dealStockpilesAndDrawPile(['A', 'B', 'C']);
     const stockTotal = state.players.reduce((s, p) => s + p.stockpile.length, 0);
