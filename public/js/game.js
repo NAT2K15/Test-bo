@@ -41,10 +41,29 @@
   function makeCardEl(card, { faceDown = false, empty = false } = {}) {
     const el = document.createElement('div');
     el.className = 'card';
-    if (faceDown) el.classList.add('face-down');
-    else if (empty) el.classList.add('empty-slot');
-    else if (card === 'SB') el.classList.add('skipbo');
-    el.textContent = empty ? '' : faceDown ? '' : cardLabel(card);
+
+    if (faceDown) {
+      el.classList.add('face-down');
+      return el;
+    }
+    if (empty) {
+      el.classList.add('empty-slot');
+      return el;
+    }
+
+    const label = cardLabel(card);
+    el.dataset.value = label;
+    if (card === 'SB') {
+      el.classList.add('skipbo');
+      el.innerHTML = '<span class="star">&#9733;</span><span class="center-pip">SB</span><span class="star">&#9733;</span>';
+    } else {
+      el.classList.add(`card-num-${card}`);
+      el.innerHTML = `
+        <span class="corner corner-tl">${label}</span>
+        <span class="center-pip">${label}</span>
+        <span class="corner corner-br">${label}</span>
+      `;
+    }
     return el;
   }
 

@@ -1,33 +1,106 @@
 .card {
-  width: 3.5rem;
-  height: 5rem;
-  border-radius: 0.5rem;
+  position: relative;
+  width: 3.75rem;
+  height: 5.25rem;
+  border-radius: 0.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
-  color: #0f172a;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
+  font-size: 1.5rem;
+  font-family: 'Georgia', 'Segoe UI', serif;
+  color: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 3px 8px rgba(0, 0, 0, 0.45);
   user-select: none;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: transform 0.1s ease, border-color 0.15s ease;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.15s ease;
+}
+
+.card .center-pip {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  line-height: 1;
+}
+
+.card .corner {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0.85;
+  line-height: 1;
+}
+
+.card .corner-tl {
+  top: 0.3rem;
+  left: 0.35rem;
+}
+
+.card .corner-br {
+  bottom: 0.3rem;
+  right: 0.35rem;
+}
+
+/* One vivid, distinct color per number so a hand reads at a glance. */
+.card.card-num-1  { background: linear-gradient(150deg, #f87171, #dc2626); }
+.card.card-num-2  { background: linear-gradient(150deg, #fb923c, #ea580c); }
+.card.card-num-3  { background: linear-gradient(150deg, #fbbf24, #d97706); color: #451a03; }
+.card.card-num-4  { background: linear-gradient(150deg, #facc15, #ca8a04); color: #422006; }
+.card.card-num-5  { background: linear-gradient(150deg, #a3e635, #65a30d); color: #1a2e05; }
+.card.card-num-6  { background: linear-gradient(150deg, #4ade80, #16a34a); }
+.card.card-num-7  { background: linear-gradient(150deg, #34d399, #059669); }
+.card.card-num-8  { background: linear-gradient(150deg, #2dd4bf, #0d9488); }
+.card.card-num-9  { background: linear-gradient(150deg, #22d3ee, #0891b2); }
+.card.card-num-10 { background: linear-gradient(150deg, #60a5fa, #2563eb); }
+.card.card-num-11 { background: linear-gradient(150deg, #a78bfa, #7c3aed); }
+.card.card-num-12 { background: linear-gradient(150deg, #f472b6, #db2777); }
+
+.card.card-num-3 .corner,
+.card.card-num-4 .corner,
+.card.card-num-5 .corner {
+  opacity: 0.7;
+}
+
+.card.card-num-3 .center-pip,
+.card.card-num-4 .center-pip,
+.card.card-num-5 .center-pip {
+  text-shadow: none;
 }
 
 .card.skipbo {
-  background: linear-gradient(160deg, #fbbf24, #f59e0b);
-  color: #1e293b;
+  background: linear-gradient(145deg, #fde047, #f59e0b 45%, #ec4899 100%);
+  color: #1e1b4b;
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 0 0 2px rgba(253, 224, 71, 0.35),
+    0 3px 10px rgba(0, 0, 0, 0.5);
+  gap: 0.15rem;
+}
+
+.card.skipbo .center-pip {
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.card.skipbo .star {
+  font-size: 0.7rem;
+  color: #7c2d12;
+  opacity: 0.8;
 }
 
 .card.face-down {
-  background: linear-gradient(160deg, #334155, #1e293b);
+  background:
+    repeating-linear-gradient(45deg, #1e293b, #1e293b 6px, #273449 6px, #273449 12px);
   color: transparent;
+  border-color: #475569;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .card.empty-slot {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
   border: 2px dashed #475569;
   box-shadow: none;
   color: #475569;
@@ -35,22 +108,32 @@
 }
 
 .card:hover:not(.empty-slot):not(.face-down) {
-  transform: translateY(-3px);
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
 .card.selected {
   border-color: #38bdf8;
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 0 0 3px rgba(56, 189, 248, 0.55),
+    0 10px 18px rgba(0, 0, 0, 0.5);
 }
 
 .card.legal-target {
   border-color: #34d399;
-  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.4);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 0 0 3px rgba(52, 211, 153, 0.55),
+    0 6px 14px rgba(0, 0, 0, 0.45);
 }
 
 .card .subnote {
   position: absolute;
-  margin-top: 3.2rem;
+  margin-top: 3.4rem;
   font-size: 0.65rem;
   font-weight: 400;
   color: #cbd5e1;
