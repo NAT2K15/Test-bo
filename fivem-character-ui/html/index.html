@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSDOJ Character Select</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="hidden">
+    <aside class="panel">
+      <div class="logo">
+        <!-- Drop your real logo in as logo.png; the SVG below is a fallback. -->
+        <img src="logo.png" alt="SSDOJ" onerror="this.remove(); document.getElementById('logo-fallback').style.display='block';">
+        <svg id="logo-fallback" viewBox="0 0 140 130" style="display:none">
+          <g fill="#c9c9c9" opacity=".85">
+            <path d="M18 70 Q14 40 20 18 M20 18 q-12 -4 -18 4 M20 18 q10 -8 20 -2 M20 18 q-4 -10 -14 -12 M20 18 q8 -2 14 8"/>
+            <path d="M122 70 Q126 40 120 18 M120 18 q12 -4 18 4 M120 18 q-10 -8 -20 -2 M120 18 q4 -10 14 -12 M120 18 q-8 -2 -14 8"/>
+          </g>
+          <g stroke="#c9c9c9" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M20 18 q-12 -4 -18 4 M20 18 q10 -8 20 -2 M20 18 q-4 -10 -14 -12 M20 18 q8 -2 14 8 M18 70 Q14 40 20 18"/>
+            <path d="M120 18 q12 -4 18 4 M120 18 q-10 -8 -20 -2 M120 18 q4 -10 14 -12 M120 18 q-8 -2 -14 8 M122 70 Q126 40 120 18"/>
+          </g>
+          <path d="M70 8 L118 22 L114 80 Q108 108 70 124 Q32 108 26 80 L22 22 Z" fill="#2a3f7a"/>
+          <path d="M70 14 L112 26 L108 79 Q102 102 70 117 Q38 102 32 79 L28 26 Z" fill="#a8302e"/>
+          <g fill="#fff">
+            <rect x="40" y="48" width="6" height="18"/><rect x="48" y="40" width="7" height="26"/>
+            <rect x="57" y="30" width="8" height="36"/><rect x="67" y="22" width="6" height="44"/>
+            <rect x="75" y="34" width="8" height="32"/><rect x="85" y="44" width="7" height="22"/>
+            <rect x="94" y="50" width="6" height="16"/>
+          </g>
+          <text x="70" y="88" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+                font-size="26" fill="#fff" stroke="#1a1a1a" stroke-width="1.5" paint-order="stroke">SSDOJ</text>
+        </svg>
+      </div>
+
+      <h1>Welcome to the<br>SSDOJ Framework</h1>
+
+      <!-- ===== Character list ===== -->
+      <section id="view-list" class="view">
+        <p class="subtitle">Select or create a character</p>
+        <div id="char-list" class="char-list"></div>
+        <button class="btn btn-create" id="btn-create">+ Create Character</button>
+      </section>
+
+      <!-- ===== Create / edit form ===== -->
+      <section id="view-form" class="view hidden">
+        <p class="subtitle" id="form-title">Create a character</p>
+        <form id="char-form" autocomplete="off">
+          <div class="row">
+            <label>First name<input name="firstName" required maxlength="24"></label>
+            <label>Last name<input name="lastName" required maxlength="24"></label>
+          </div>
+          <div class="row">
+            <label>Date of birth<input name="dob" type="date" required></label>
+            <label>Gender
+              <select name="gender">
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </label>
+          </div>
+          <label>Department
+            <select name="department" id="dept-select" required></select>
+          </label>
+
+          <div id="form-spawn-wrap">
+            <span class="field-label">Spawn location</span>
+            <div id="form-spawns" class="spawn-grid"></div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-ghost" data-back>Back</button>
+            <button type="submit" class="btn btn-primary" id="form-submit">Create &amp; Spawn</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ===== Spawn selector (for existing characters) ===== -->
+      <section id="view-spawn" class="view hidden">
+        <p class="subtitle">Choose where to spawn</p>
+        <p class="spawn-who" id="spawn-who"></p>
+        <div id="spawn-list" class="spawn-grid"></div>
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" data-back>Back</button>
+          <button type="button" class="btn btn-primary" id="btn-spawn" disabled>Spawn</button>
+        </div>
+      </section>
+
+      <footer class="footer">SSDOJ Framework</footer>
+    </aside>
+
+    <div class="world"></div>
+  </div>
+
+  <!-- Delete confirmation -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <h2>Delete character?</h2>
+      <p id="modal-text"></p>
+      <div class="actions">
+        <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+        <button class="btn btn-delete" id="modal-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
