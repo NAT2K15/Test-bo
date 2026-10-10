@@ -11,14 +11,10 @@
 <body>
   <div id="app" class="hidden">
     <aside class="panel">
-      <div class="logo">
+      <div class="brand">
         <!-- Drop your real logo in as logo.png; the SVG below is a fallback. -->
         <img src="logo.png" alt="SSDOJ" onerror="this.remove(); document.getElementById('logo-fallback').style.display='block';">
         <svg id="logo-fallback" viewBox="0 0 140 130" style="display:none">
-          <g fill="#c9c9c9" opacity=".85">
-            <path d="M18 70 Q14 40 20 18 M20 18 q-12 -4 -18 4 M20 18 q10 -8 20 -2 M20 18 q-4 -10 -14 -12 M20 18 q8 -2 14 8"/>
-            <path d="M122 70 Q126 40 120 18 M120 18 q12 -4 18 4 M120 18 q-10 -8 -20 -2 M120 18 q4 -10 14 -12 M120 18 q-8 -2 -14 8"/>
-          </g>
           <g stroke="#c9c9c9" stroke-width="3" fill="none" stroke-linecap="round">
             <path d="M20 18 q-12 -4 -18 4 M20 18 q10 -8 20 -2 M20 18 q-4 -10 -14 -12 M20 18 q8 -2 14 8 M18 70 Q14 40 20 18"/>
             <path d="M120 18 q12 -4 18 4 M120 18 q-10 -8 -20 -2 M120 18 q4 -10 14 -12 M120 18 q-8 -2 -14 8 M122 70 Q126 40 120 18"/>
@@ -34,77 +30,41 @@
           <text x="70" y="88" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900"
                 font-size="26" fill="#fff" stroke="#1a1a1a" stroke-width="1.5" paint-order="stroke">SSDOJ</text>
         </svg>
+        <h1>Welcome to the<br>SSDOJ Framework</h1>
       </div>
 
-      <h1>Welcome to the<br>SSDOJ Framework</h1>
-
-      <!-- ===== Character list ===== -->
-      <section id="view-list" class="view">
-        <p class="subtitle">Select or create a character</p>
-        <div id="char-list" class="char-list"></div>
-        <button class="btn btn-create" id="btn-create">+ Create Character</button>
-      </section>
-
-      <!-- ===== Create / edit form ===== -->
-      <section id="view-form" class="view hidden">
-        <p class="subtitle" id="form-title">Create a character</p>
-        <form id="char-form" autocomplete="off">
-          <div class="row">
-            <label>First name<input name="firstName" required maxlength="24"></label>
-            <label>Last name<input name="lastName" required maxlength="24"></label>
-          </div>
-          <div class="row">
-            <label>Date of birth<input name="dob" type="date" required></label>
-            <label>Gender
-              <select name="gender">
-                <option>Male</option><option>Female</option><option>Other</option>
-              </select>
-            </label>
-          </div>
-          <label>Department
-            <select name="department" id="dept-select" required></select>
-          </label>
-
-          <div id="form-spawn-wrap">
-            <span class="field-label">Spawn location</span>
-            <div id="form-spawns" class="spawn-grid"></div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn btn-ghost" data-back>Back</button>
-            <button type="submit" class="btn btn-primary" id="form-submit">Create &amp; Spawn</button>
-          </div>
-        </form>
-      </section>
-
-      <!-- ===== Spawn selector (for existing characters) ===== -->
-      <section id="view-spawn" class="view hidden">
-        <p class="subtitle">Choose where to spawn</p>
-        <p class="spawn-who" id="spawn-who"></p>
-        <div id="spawn-list" class="spawn-grid"></div>
-        <div class="actions">
-          <button type="button" class="btn btn-ghost" data-back>Back</button>
-          <button type="button" class="btn btn-primary" id="btn-spawn" disabled>Spawn</button>
+      <!-- Server status -->
+      <div class="status">
+        <div class="status-aop">
+          <span class="status-label">Current AOP</span>
+          <span class="aop-value"><span class="dot"></span><span id="aop-value"></span></span>
         </div>
-      </section>
+        <div class="status-row">
+          <div><span class="status-label">Priority</span><span class="status-value" id="priority-value"></span></div>
+          <div><span class="status-label">Peacetime</span><span class="status-value" id="peace-value"></span></div>
+          <div><span class="status-label">Players</span><span class="status-value" id="online-value"></span></div>
+        </div>
+      </div>
 
-      <footer class="footer">SSDOJ Framework</footer>
+      <div class="top-actions">
+        <button class="btn btn-create" id="btn-create">+ Create Character</button>
+        <button class="btn btn-admin hidden" id="btn-admin">Admin</button>
+      </div>
+
+      <p class="subtitle">Select a character</p>
+      <div id="char-list" class="char-list"></div>
+
+      <footer class="footer">
+        <span>SSDOJ Framework</span>
+        <button class="link" id="btn-disconnect">Disconnect</button>
+      </footer>
     </aside>
 
     <div class="world"></div>
   </div>
 
-  <!-- Delete confirmation -->
-  <div id="modal" class="modal hidden">
-    <div class="modal-card">
-      <h2>Delete character?</h2>
-      <p id="modal-text"></p>
-      <div class="actions">
-        <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
-        <button class="btn btn-delete" id="modal-confirm">Delete</button>
-      </div>
-    </div>
-  </div>
+  <div id="modals"></div>
+  <div id="toasts"></div>
 
   <script src="script.js"></script>
 </body>
