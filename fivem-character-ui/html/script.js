@@ -9,7 +9,7 @@
  *   { action: "close" }
  *
  * NUI -> Lua (RegisterNUICallback, always respond with a table):
- *   createCharacter { character, spawn }  -> { id }
+ *   createCharacter { character }         -> { id }
  *   editCharacter   { character }
  *   deleteCharacter { id }
  *   playCharacter   { id, spawn }
@@ -111,11 +111,11 @@ window.addEventListener("message", ({ data }) => {
       for (const k of [...STATUS_KEYS, "isAdmin", "departments", "spawns"]) {
         if (data[k] !== undefined) state[k] = data[k];
       }
-      state.characters = data.characters || [];
+      state.characters = (data.characters || []).map(normalizeCharacter);
       openUI();
       break;
     case "setCharacters":
-      state.characters = data.characters || [];
+      state.characters = (data.characters || []).map(normalizeCharacter);
       renderList();
       break;
     case "setStatus":
@@ -279,15 +279,13 @@ document.addEventListener("keydown", (e) => {
 
 function openCharacterModal(character = null, { admin = false, onSaved } = {}) {
   const editing = !!character;
-  const withSpawn = !editing && !admin;
-  let spawn = null;
 
   const deptOptions = state.departments
     .map((d) => `<option value="${esc(d)}">${esc(d)}</option>`).join("");
 
   const m = openModal({
     title: editing ? `Edit ${fullName(character)}` : "Create Character",
-    size: withSpawn ? "" : "small",
+    size: "small",
     body: `
       <form class="form" autocomplete="off">
         ${admin && !editing ? `<label>Owner (server ID or license)<input name="owner" required placeholder="e.g. 12 or license:abc123"></label>` : ""}
@@ -302,29 +300,16 @@ function openCharacterModal(character = null, { admin = false, onSaved } = {}) {
           </label>
         </div>
         <label>Department<select name="department">${deptOptions}</select></label>
-        ${withSpawn ? `<div class="field-label">Spawn location<div class="spawn-grid"></div></div>` : ""}
         <button type="submit" hidden></button>
       </form>`,
     footer: `
       <button class="btn btn-ghost" data-act="close">Cancel</button>
-      <button class="btn btn-primary" data-act="save">${editing ? "Save Changes" : withSpawn ? "Create & Spawn" : "Create"}</button>`,
+      <button class="btn btn-primary" data-act="save">${editing ? "Save Changes" : "Create Character"}</button>`,
     onAction: (act) => { if (act === "save") save(); },
   });
 
   const form = $("form", m);
-  if (editing) {
-    for (const key of ["firstName", "lastName", "dob", "gender", "department"]) {
-      if (character[key] != null) form.elements[key].value = character[key];
-    }
-  }
-
-  const refreshSpawns = () => {
-    if (!withSpawn) return;
-    spawn = null;
-    renderSpawns($(".spawn-grid", m), spawnsFor(form.elements.department.value), (s) => (spawn = s));
-  };
-  form.elements.department.addEventListener("change", refreshSpawns);
-  refreshSpawns();
+  if (editing) prefill(form, character);
   form.addEventListener("submit", (e) => { e.preventDefault(); save(); });
   form.elements[admin && !editing ? "owner" : "firstName"].focus();
 
@@ -333,11 +318,6 @@ function openCharacterModal(character = null, { admin = false, onSaved } = {}) {
     const data = Object.fromEntries(new FormData(form).entries());
     data.firstName = data.firstName.trim();
     data.lastName = data.lastName.trim();
-
-    if (withSpawn && !spawn) {
-      toast("Pick a spawn location first", "error");
-      return flash($(".spawn-grid", m));
-    }
 
     if (editing) {
       const updated = { ...character, ...data };
@@ -363,12 +343,69 @@ function openCharacterModal(character = null, { admin = false, onSaved } = {}) {
       return;
     }
 
-    const res = await post("createCharacter", { character: data, spawn });
+    // New characters go back to the list; the spawn is picked when they hit Play.
+    const res = await post("createCharacter", { character: data });
     if (res.ok === false) return toast(res.error || "Could not create character", "error");
     data.id = res.id != null ? res.id : Date.now();
     state.characters.push(data);
-    closeUI();
+    renderList();
+    toast(`Created ${fullName(data)}`);
+    closeModal(m);
   }
+}
+
+function prefill(form, c) {
+  form.elements.firstName.value = c.firstName;
+  form.elements.lastName.value = c.lastName;
+  form.elements.dob.value = c.dob;
+  setSelect(form.elements.gender, c.gender);
+  setSelect(form.elements.department, c.department);
+}
+
+// Bring a character from Lua into one shape, tolerating what a database tends to
+// hand back: snake_case keys, "MM/DD/YYYY" or timestamp DOBs, lowercase values.
+function normalizeCharacter(c) {
+  const pick = (...keys) => keys.map((k) => c[k]).find((v) => v != null && v !== "");
+  const gender = String(pick("gender", "sex") ?? "").trim();
+  const dept = String(pick("department", "dept", "job") ?? "CIV").trim();
+  return {
+    ...c,
+    firstName: String(pick("firstName", "firstname", "first_name") ?? "").trim(),
+    lastName: String(pick("lastName", "lastname", "last_name") ?? "").trim(),
+    dob: toDateInput(pick("dob", "dateofbirth", "date_of_birth", "birthdate")),
+    gender: gender && gender[0].toUpperCase() + gender.slice(1).toLowerCase(),
+    department: state.departments.find((d) => d.toLowerCase() === dept.toLowerCase()) || dept.toUpperCase(),
+  };
+}
+
+function setSelect(select, value) {
+  if (value == null) return;
+  const v = String(value).trim();
+  let opt = [...select.options].find((o) => o.value.toLowerCase() === v.toLowerCase());
+  if (!opt) {
+    // Keep unknown values instead of silently switching to the first option.
+    opt = new Option(v, v);
+    select.add(opt);
+  }
+  select.value = opt.value;
+}
+
+function toDateInput(v) {
+  if (v == null || v === "") return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (d) => (isNaN(d) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+  if (typeof v === "number" || /^\d+$/.test(v)) {
+    const n = Number(v);
+    // Seconds or milliseconds. Read as UTC so a midnight date doesn't shift a day.
+    const d = new Date(n < 1e11 ? n * 1000 : n);
+    return isNaN(d) ? "" : `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/); // MM/DD/YYYY
+  if (m) return `${m[3]}-${pad(m[1])}-${pad(m[2])}`;
+  return iso(new Date(s));
 }
 
 // Keep the player's own list in step when an admin edits one of their characters.
@@ -551,6 +588,7 @@ async function openAdmin() {
     uptime: "—", weather: "CLEAR", time: 12, freezeTime: false, blackout: false,
     ...data,
   };
+  admin.characters = admin.characters.map(normalizeCharacter);
   let tab = "dashboard";
 
   const TABS = [
@@ -791,6 +829,7 @@ async function openAdmin() {
 
       case "refresh":
         Object.assign(admin, await post("adminGetData"));
+        admin.characters = admin.characters.map(normalizeCharacter);
         return show(tab);
 
       // ---- dashboard ----
@@ -1063,10 +1102,11 @@ const MOCK_ADMIN = {
 function mockResponse(event, data) {
   switch (event) {
     case "createCharacter":
+      return { id: Date.now() };
     case "playCharacter":
       // Pretend to spawn, then reopen so the preview keeps working.
       setTimeout(() => window.postMessage({ action: "open", characters: state.characters }, "*"), 1200);
-      return event === "createCharacter" ? { id: Date.now() } : {};
+      return {};
     case "getCrimeHistory":
       return JSON.parse(JSON.stringify(MOCK_RECORDS[data.id] || { licenses: [{ name: "Driver", status: "Valid" }], records: [] }));
     case "adminGetData":
