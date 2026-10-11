@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SSDOJ Character Select</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
       <div class="brand">
         <!-- Drop your real logo in as logo.png; the SVG below is a fallback. -->
         <img src="logo.png" alt="SSDOJ" onerror="this.remove(); document.getElementById('logo-fallback').style.display='block';">
-        <svg id="logo-fallback" viewBox="0 0 140 130" style="display:none">
+        <svg id="logo-fallback" class="logo" viewBox="0 0 140 130" style="display:none">
           <g stroke="#c9c9c9" stroke-width="3" fill="none" stroke-linecap="round">
             <path d="M20 18 q-12 -4 -18 4 M20 18 q10 -8 20 -2 M20 18 q-4 -10 -14 -12 M20 18 q8 -2 14 8 M18 70 Q14 40 20 18"/>
             <path d="M120 18 q12 -4 18 4 M120 18 q-10 -8 -20 -2 M120 18 q4 -10 14 -12 M120 18 q-8 -2 -14 8 M122 70 Q126 40 120 18"/>
@@ -30,37 +30,68 @@
           <text x="70" y="88" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900"
                 font-size="26" fill="#fff" stroke="#1a1a1a" stroke-width="1.5" paint-order="stroke">SSDOJ</text>
         </svg>
-        <h1>Welcome to the<br>SSDOJ Framework</h1>
+        <div class="eyebrow">Welcome to the</div>
+        <h1>SSDOJ <span>Framework</span></h1>
       </div>
 
       <!-- Server status -->
       <div class="status">
-        <div class="status-aop">
-          <span class="status-label">Current AOP</span>
-          <span class="aop-value"><span class="dot"></span><span id="aop-value"></span></span>
+        <div class="aop">
+          <div class="aop-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>
+          </div>
+          <div class="aop-text">
+            <span class="status-label">Current AOP</span>
+            <span class="aop-value" id="aop-value"></span>
+          </div>
+          <span class="live"><span class="dot"></span>Live</span>
         </div>
         <div class="status-row">
-          <div><span class="status-label">Priority</span><span class="status-value" id="priority-value"></span></div>
-          <div><span class="status-label">Peacetime</span><span class="status-value" id="peace-value"></span></div>
-          <div><span class="status-label">Players</span><span class="status-value" id="online-value"></span></div>
+          <div class="stat">
+            <span class="status-label">Priority</span>
+            <span class="pill" id="priority-value"></span>
+          </div>
+          <div class="stat">
+            <span class="status-label">Peacetime</span>
+            <span class="pill" id="peace-value"></span>
+          </div>
+          <div class="stat">
+            <span class="status-label">Players</span>
+            <span class="status-value" id="online-value"></span>
+          </div>
         </div>
       </div>
 
       <div class="top-actions">
-        <button class="btn btn-create" id="btn-create">+ Create Character</button>
-        <button class="btn btn-admin hidden" id="btn-admin">Admin</button>
+        <button class="btn btn-create" id="btn-create">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create Character
+        </button>
+        <button class="btn btn-admin hidden" id="btn-admin">
+          <svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></svg>Admin
+        </button>
       </div>
 
-      <p class="subtitle">Select a character</p>
+      <div class="list-head">
+        <span>Your Characters</span>
+        <span class="list-count" id="char-count"></span>
+      </div>
       <div id="char-list" class="char-list"></div>
 
       <footer class="footer">
-        <span>SSDOJ Framework</span>
-        <button class="link" id="btn-disconnect">Disconnect</button>
+        <span>SSDOJ Framework <b>v1.0</b></span>
+        <button class="link" id="btn-disconnect">
+          <svg viewBox="0 0 24 24"><path d="M12 3v8M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Disconnect
+        </button>
       </footer>
     </aside>
 
-    <div class="world"></div>
+    <div class="world">
+      <div class="clock">
+        <div class="clock-time" id="clock-time"></div>
+        <div class="clock-date" id="clock-date"></div>
+      </div>
+      <div class="world-hint">Select a character to begin your shift</div>
+    </div>
   </div>
 
   <div id="modals"></div>

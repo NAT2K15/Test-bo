@@ -145,29 +145,43 @@ function renderStatus() {
   $("#aop-value").textContent = state.aop;
   const pr = $("#priority-value");
   pr.textContent = state.priority;
-  pr.style.color = PRIORITY_COLORS[state.priority] || "#fff";
+  pr.style.setProperty("--c", PRIORITY_COLORS[state.priority] || "#fff");
   const pt = $("#peace-value");
   pt.textContent = state.peacetime ? "On" : "Off";
-  pt.style.color = state.peacetime ? "#4caf50" : "#d9534f";
-  $("#online-value").textContent = `${state.online}/${state.maxPlayers}`;
+  pt.style.setProperty("--c", state.peacetime ? "#4caf50" : "#d9534f");
+  $("#online-value").textContent = `${state.online} / ${state.maxPlayers}`;
   $("#btn-admin").classList.toggle("hidden", !state.isAdmin);
 }
 
+const ICONS = {
+  play: `<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>`,
+  history: `<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>`,
+};
+
 function renderList() {
   const list = $("#char-list");
+  $("#char-count").textContent = state.characters.length;
   if (!state.characters.length) {
-    list.innerHTML = `<p class="empty">You have no characters yet. Create one above.</p>`;
+    list.innerHTML = `<p class="empty">You have no characters yet.<br>Hit <b>Create Character</b> to get started.</p>`;
     return;
   }
   list.innerHTML = state.characters.map((c, i) => `
-    <div class="char-row" data-id="${esc(c.id)}" style="animation-delay:${i * 40}ms">
-      <button class="btn btn-play" data-act="play">
-        ${marquee(`Play As: ${fullName(c)}`)}
-        ${deptChip(c.department)}
-      </button>
-      <button class="btn btn-edit" data-act="edit">Edit</button>
-      <button class="btn btn-history" data-act="history">Crime History</button>
-      <button class="btn btn-delete" data-act="delete">Delete</button>
+    <div class="char-card" data-id="${esc(c.id)}" style="--c:${DEPT_COLORS[c.department] || "#6b7280"};animation-delay:${i * 50}ms">
+      <div class="char-main">
+        <div class="avatar">${esc(initials(c))}</div>
+        <div class="char-info">
+          ${marquee(fullName(c), "char-name")}
+          <div class="char-sub">${deptChip(c.department)}${c.dob ? `<span>DOB ${esc(c.dob)}</span>` : ""}</div>
+        </div>
+        <button class="play-btn" data-act="play">${ICONS.play}Play</button>
+      </div>
+      <div class="char-actions">
+        <button class="edit" data-act="edit">${ICONS.edit}Edit</button>
+        <button class="history" data-act="history">${ICONS.history}Crime History</button>
+        <button class="danger" data-act="delete">${ICONS.trash}Delete</button>
+      </div>
     </div>`).join("");
   applyMarquee(list);
 }
@@ -175,13 +189,21 @@ function renderList() {
 $("#char-list").addEventListener("click", (e) => {
   const btn = e.target.closest("[data-act]");
   if (!btn) return;
-  const c = state.characters.find((x) => String(x.id) === btn.closest(".char-row").dataset.id);
+  const c = state.characters.find((x) => String(x.id) === btn.closest(".char-card").dataset.id);
   if (!c) return;
   if (btn.dataset.act === "play") openSpawnModal(c);
   if (btn.dataset.act === "edit") openCharacterModal(c);
   if (btn.dataset.act === "history") openCrimeHistory(c);
   if (btn.dataset.act === "delete") deleteCharacter(c);
 });
+
+function tickClock() {
+  const now = new Date();
+  $("#clock-time").textContent = now.toTimeString().slice(0, 5);
+  $("#clock-date").textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+tickClock();
+setInterval(tickClock, 10000);
 
 $("#btn-create").onclick = () => openCharacterModal();
 $("#btn-admin").onclick = () => openAdmin();
@@ -962,6 +984,7 @@ function flash(el) {
 }
 
 const fullName = (c) => `${c.firstName} ${c.lastName}`;
+const initials = (c) => `${(c.firstName || "?")[0]}${(c.lastName || "")[0] || ""}`.toUpperCase();
 const sum = (list, key) => list.reduce((n, r) => n + (Number(r[key]) || 0), 0);
 const money = (n) => `$${Number(n).toLocaleString("en-US")}`;
 const hour = (h) => `${String(h).padStart(2, "0")}:00`;
